@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TensioSoins</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d26;--surface2:#22263a;--border:#2e3347;
+  --accent:#4f8ef7;--accent2:#7dd4b0;--danger:#f76f6f;--warn:#f7c44f;
+  --sat:#a78bfa;--text:#e8eaf2;--text2:#8b90a8;--text3:#555b78;
+  --radius:16px;--radius-sm:10px;
+  --c-ok:#7dd4b0;--c-warn:#f7c44f;--c-danger:#f76f6f;--c-sat:#a78bfa;--c-accent:#4f8ef7;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:60px;}
+
+/* CONFIG */
+#config-screen{position:fixed;inset:0;z-index:2000;background:var(–bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+.cfg-logo{font-family:‘DM Serif Display’,serif;font-size:28px;letter-spacing:-.5px;margin-bottom:6px;text-align:center;}
+.cfg-logo span{color:var(–accent);}
+.cfg-sub{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:28px;}
+.cfg-card{background:var(–surface);border:1px solid var(–border);border-radius:var(–radius);padding:20px;width:100%;max-width:420px;}
+.cfg-title{font-size:14px;font-weight:600;color:var(–accent);margin-bottom:6px;}
+.cfg-desc{font-size:12px;color:var(–text3);line-height:1.6;margin-bottom:14px;}
+.cfg-inp{width:100%;background:var(–surface2);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:13px;padding:11px 12px;outline:none;margin-bottom:10px;transition:border-color .2s;}
+.cfg-inp:focus{border-color:var(–accent);}
+.cfg-inp::placeholder{color:var(–text3);}
+.btn-cfg{width:100%;background:var(–accent);border:none;border-radius:var(–radius-sm);color:#fff;font-family:‘DM Sans’,sans-serif;font-size:14px;font-weight:600;padding:13px;cursor:pointer;margin-top:4px;}
+.btn-test{width:100%;background:var(–surface2);border:1px solid var(–border);border-radius:var(–radius-sm);color:var(–text2);font-family:‘DM Sans’,sans-serif;font-size:13px;padding:11px;cursor:pointer;margin-bottom:10px;}
+#test-result{font-size:12px;text-align:center;min-height:16px;margin-top:6px;}
+.cfg-note{font-size:11px;color:var(–text3);text-align:center;margin-top:10px;line-height:1.5;}
+
+/* LOCK */
+#lock-screen{position:fixed;inset:0;z-index:1000;background:var(–bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px 32px;overflow-y:auto;}
+.lock-logo{font-family:‘DM Serif Display’,serif;font-size:30px;letter-spacing:-.5px;margin-bottom:4px;}
+.lock-logo span{color:var(–accent);}
+.lock-sub{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
+.lock-login-wrap{width:100%;max-width:280px;margin-bottom:16px;}
+.lock-lbl{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:6px;display:block;}
+.lock-inp{width:100%;background:var(–surface);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:16px;padding:12px 14px;outline:none;text-align:center;transition:border-color .2s;}
+.lock-inp:focus{border-color:var(–accent);}
+.lock-pin-lbl{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:14px;}
+.pin-dots{display:flex;gap:16px;margin-bottom:24px;}
+.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(–text3);transition:all .15s;}
+.pin-dot.filled{background:var(–c-accent);border-color:var(–c-accent);}
+.pin-dot.error{background:var(–c-danger);border-color:var(–c-danger);}
+.numpad{display:grid;grid-template-columns:repeat(3,68px);gap:10px;}
+.np-btn{width:68px;height:68px;border-radius:50%;background:var(–surface);border:1px solid var(–border);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:22px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;transition:background .1s,transform .1s;}
+.np-btn:active{background:var(–surface2);transform:scale(.93);}
+.np-btn.del{font-size:17px;color:var(–text3);}
+.np-btn.empty{background:transparent;border-color:transparent;pointer-events:none;}
+.np-sub{font-size:7px;letter-spacing:1.5px;color:var(–text3);margin-top:1px;}
+.lock-error{font-size:13px;color:var(–c-danger);margin-top:14px;min-height:18px;text-align:center;}
+.lock-hint{margin-top:14px;font-size:12px;color:var(–text3);}
+.lock-hint a{color:var(–c-accent);cursor:pointer;}
+
+/* SPINNER */
+.spinner-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);align-items:center;justify-content:center;}
+.spinner-overlay.show{display:flex;}
+.spinner{width:40px;height:40px;border:3px solid var(–border);border-top-color:var(–c-accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(15,17,23,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(–border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:‘DM Serif Display’,serif;font-size:20px;letter-spacing:-.5px;}
+.logo span{color:var(–c-accent);}
+.logo-sub{font-size:10px;color:var(–text3);margin-top:1px;letter-spacing:.5px;text-transform:uppercase;}
+.hdr-right{display:flex;gap:6px;align-items:center;}
+.hdr-user{font-size:11px;color:var(–c-ok);padding:4px 10px;background:rgba(125,212,176,.1);border-radius:20px;border:1px solid rgba(125,212,176,.2);}
+.btn-icon{background:none;border:none;color:var(–text3);cursor:pointer;padding:5px;display:flex;align-items:center;}
+.btn-add{width:36px;height:36px;border-radius:50%;background:var(–c-accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(79,142,247,.35);transition:transform .15s;}
+.btn-add:active{transform:scale(.9);}
+
+/* PAGES */
+.page{display:none;padding:16px;}.page.active{display:block;}
+.search-wrap{position:relative;margin-bottom:16px;}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(–text3);pointer-events:none;}
+.search-input{width:100%;background:var(–surface);border:1px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:15px;padding:11px 12px 11px 38px;outline:none;transition:border-color .2s;}
+.search-input::placeholder{color:var(–text3);}
+.search-input:focus{border-color:var(–c-accent);}
+.patient-list{display:flex;flex-direction:column;gap:10px;}
+.patient-card{background:var(–surface);border:1px solid var(–border);border-radius:var(–radius);padding:14px 15px;cursor:pointer;transition:border-color .2s,transform .15s;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.patient-card:active{transform:scale(.985);border-color:var(–c-accent);}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(–c-accent),var(–c-ok));display:flex;align-items:center;justify-content:center;font-family:‘DM Serif Display’,serif;font-size:17px;color:#fff;flex-shrink:0;}
+.p-info{flex:1;min-width:0;}
+.p-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.p-meta{font-size:11px;color:var(–text3);margin-top:2px;}
+.p-bp{text-align:right;flex-shrink:0;}
+.bp-val{font-family:‘DM Serif Display’,serif;font-size:17px;line-height:1;}
+.bp-lbl{font-size:10px;color:var(–text3);margin-top:2px;}
+.empty{text-align:center;padding:50px 20px;color:var(–text3);}
+.empty svg{margin-bottom:14px;opacity:.3;}
+.empty p{font-size:14px;line-height:1.6;}
+
+/* DETAIL */
+.detail-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.btn-back{background:var(–surface);border:1px solid var(–border);border-radius:var(–radius-sm);color:var(–text);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.btn-back:active{background:var(–surface2);}
+.d-name{font-family:‘DM Serif Display’,serif;font-size:22px;line-height:1.1;}
+.d-dob{font-size:11px;color:var(–text3);margin-top:2px;}
+.btn-edit-patient{background:var(–surface2);border:1px solid var(–border);border-radius:var(–radius-sm);color:var(–text2);font-family:‘DM Sans’,sans-serif;font-size:12px;padding:6px 12px;cursor:pointer;margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:5px;}
+.btn-edit-patient:active{background:var(–surface);}
+
+/* FORM */
+.form-card{background:var(–surface);border:1px solid var(–border);border-radius:var(–radius);padding:16px;margin-bottom:16px;}
+.form-ttl{font-size:12px;font-weight:600;color:var(–text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:10px;}
+.grid2{display:grid;grid-template-columns:1fr 2fr;gap:9px;margin-bottom:10px;}
+.inp-grp{display:flex;flex-direction:column;gap:5px;}
+.inp-lbl{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
+.m-inp{background:var(–surface2);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Serif Display’,serif;font-size:25px;text-align:center;padding:9px 4px;outline:none;width:100%;transition:border-color .2s;-webkit-appearance:none;}
+.m-inp:focus{border-color:var(–c-accent);}
+.m-inp::placeholder{color:var(–text3);font-size:19px;}
+.m-inp.sat-i{border-color:rgba(167,139,250,.3);}
+.m-inp.sat-i:focus{border-color:var(–c-sat);}
+.inp-unit{font-size:10px;color:var(–text3);text-align:center;margin-top:-2px;}
+.sat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:9px 12px;background:var(–surface2);border-radius:var(–radius-sm);border:1px solid var(–border);cursor:pointer;}
+.sat-lbl{font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;}
+.sat-dot{width:7px;height:7px;border-radius:50%;background:var(–c-sat);}
+.toggle{width:40px;height:22px;background:var(–border);border-radius:11px;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(–c-sat);}
+.toggle::after{content:’’;position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.toggle.on::after{transform:translateX(18px);}
+.sat-sec{display:none;}.sat-sec.show{display:block;}
+.sat-hint{font-size:12px;padding:0 8px;align-self:center;}
+.note-inp{width:100%;background:var(–surface2);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:14px;padding:9px 11px;outline:none;resize:none;margin-bottom:12px;transition:border-color .2s;}
+.note-inp::placeholder{color:var(–text3);}
+.note-inp:focus{border-color:var(–c-accent);}
+.btn-save{width:100%;background:var(–c-accent);border:none;border-radius:var(–radius-sm);color:#fff;font-family:‘DM Sans’,sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;transition:opacity .2s;}
+.btn-save:active{opacity:.85;}
+
+/* HISTORY */
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.sec-ttl{font-size:12px;font-weight:600;color:var(–text3);text-transform:uppercase;letter-spacing:.8px;}
+.send-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.btn-send{display:flex;align-items:center;gap:4px;border-radius:16px;font-family:‘DM Sans’,sans-serif;font-size:10px;font-weight:600;padding:5px 9px;cursor:pointer;white-space:nowrap;border:1px solid;}
+.sms-last{background:#1a2e1a;border-color:#2d5e2d;color:var(–c-ok);}
+.sms-all{background:#162a2a;border-color:#1e4d4d;color:#5fc8c8;}
+.email-last{background:#2e1f1a;border-color:#5e3a2d;color:#f4845f;}
+.email-all{background:#2a1a16;border-color:#5e2d22;color:#f0a585;}
+.hist-list{display:flex;flex-direction:column;gap:8px;}
+.meas-item{background:var(–surface);border:1px solid var(–border);border-radius:var(–radius-sm);padding:11px 13px;display:flex;align-items:center;gap:11px;}
+.date-col{flex-shrink:0;text-align:center;min-width:32px;}
+.m-day{font-size:19px;font-family:‘DM Serif Display’,serif;line-height:1;}
+.m-mon{font-size:9px;color:var(–text3);text-transform:uppercase;letter-spacing:.5px;}
+.m-time{font-size:9px;color:var(–text3);margin-top:2px;}
+.div-line{width:1px;height:42px;background:var(–border);flex-shrink:0;}
+.meas-vals{flex:1;}
+.bp-row{display:flex;align-items:baseline;gap:3px;}
+.m-sys{font-family:‘DM Serif Display’,serif;font-size:22px;line-height:1;}
+.m-sep{font-size:13px;color:var(–text3);}
+.m-dia{font-family:‘DM Serif Display’,serif;font-size:17px;color:var(–text2);}
+.m-unit{font-size:9px;color:var(–text3);margin-left:2px;}
+.sub-row{display:flex;gap:10px;margin-top:3px;flex-wrap:wrap;}
+.m-pulse{font-size:11px;color:var(–text3);}
+.m-sat-v{font-size:11px;font-weight:600;}
+.m-note{font-size:10px;color:var(–text3);margin-top:3px;font-style:italic;}
+.m-by{font-size:9px;color:var(–text3);margin-top:3px;}
+.status-dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;}
+.del-btn{background:none;border:none;color:var(–text3);cursor:pointer;padding:3px;flex-shrink:0;}
+.del-btn:active{color:var(–c-danger);}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(–surface);border:1px solid var(–border);border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-width:500px;animation:up .25s ease;max-height:90vh;overflow-y:auto;}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-ttl{font-family:‘DM Serif Display’,serif;font-size:19px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-x{background:none;border:none;color:var(–text3);font-size:21px;cursor:pointer;}
+.modal-fld{margin-bottom:12px;}
+.modal-lbl{font-size:11px;color:var(–text3);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block;}
+.modal-inp{width:100%;background:var(–surface2);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:15px;padding:11px 13px;outline:none;transition:border-color .2s;}
+.modal-inp:focus{border-color:var(–c-accent);}
+.btn-msave{width:100%;background:var(–c-accent);border:none;border-radius:var(–radius-sm);color:#fff;font-family:‘DM Sans’,sans-serif;font-size:15px;font-weight:600;padding:13px;cursor:pointer;margin-top:6px;}
+.btn-msave:active{opacity:.85;}
+.btn-mdanger{width:100%;background:rgba(247,111,111,.1);border:1px solid rgba(247,111,111,.3);border-radius:var(–radius-sm);color:var(–c-danger);font-family:‘DM Sans’,sans-serif;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-top:10px;}
+.btn-mdanger:active{opacity:.85;}
+
+/* COULEURS */
+.color-section{margin-bottom:18px;}
+.color-section-ttl{font-size:12px;font-weight:600;color:var(–text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.color-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.color-item-lbl{font-size:10px;color:var(–text3);text-align:center;}
+.color-swatch-wrap{position:relative;width:44px;height:44px;}
+.color-swatch{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;-webkit-appearance:none;appearance:none;padding:0;background:none;}
+.color-swatch::-webkit-color-swatch-wrapper{padding:0;border-radius:50%;}
+.color-swatch::-webkit-color-swatch{border:none;border-radius:50%;}
+.color-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;pointer-events:none;transition:border-color .2s;}
+.color-ring.active{border-color:var(–text);}
+.theme-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.preset-btn{padding:7px 14px;border-radius:20px;font-family:‘DM Sans’,sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(–border);background:var(–surface2);color:var(–text2);transition:all .15s;}
+.preset-btn:active{opacity:.8;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(–surface2);border:1px solid var(–border);border-radius:28px;padding:9px 18px;font-size:13px;font-weight:500;color:var(–text);z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:99;background:rgba(15,17,23,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(–border);display:flex;justify-content:space-around;padding:10px 0 calc(10px + env(safe-area-inset-bottom));}
+.nav-btn{background:none;border:none;color:var(–text3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 16px;font-family:‘DM Sans’,sans-serif;font-size:10px;transition:color .15s;}
+.nav-btn.active{color:var(–c-accent);}
+.nav-btn svg{width:20px;height:20px;}
+</style>
+
+</head>
+<body>
+
+<!-- CONFIG -->
+
+<div id="config-screen">
+  <div class="cfg-logo">Tensio<span>Soins</span></div>
+  <div class="cfg-sub">Configuration initiale</div>
+  <div class="cfg-card">
+    <div class="cfg-title">🔗 URL du script Google</div>
+    <div class="cfg-desc">Collez l'URL de déploiement Apps Script (se termine par <code>/exec</code>).</div>
+    <input class="cfg-inp" type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/…/exec">
+    <button class="btn-test" onclick="testURL()">🔍 Tester la connexion</button>
+    <div id="test-result"></div>
+    <button class="btn-cfg" onclick="saveConfig()">Enregistrer et continuer</button>
+    <div class="cfg-note">URL mémorisée sur cet appareil uniquement.</div>
+  </div>
+</div>
+
+<!-- LOCK -->
+
+<div id="lock-screen">
+  <div class="lock-logo">Tensio<span>Soins</span></div>
+  <div class="lock-sub">Infirmier libéral</div>
+  <div class="lock-login-wrap">
+    <span class="lock-lbl">Identifiant</span>
+    <input class="lock-inp" type="text" id="lock-login" placeholder="ex: admin" autocapitalize="none" autocorrect="off" autocomplete="off" onkeydown="if(event.key==='Enter'){this.blur();}">
+  </div>
+  <div class="lock-pin-lbl">Code PIN</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="numpad">
+    <button class="np-btn" onclick="pinPress('1')">1</button>
+    <button class="np-btn" onclick="pinPress('2')">2<div class="np-sub">ABC</div></button>
+    <button class="np-btn" onclick="pinPress('3')">3<div class="np-sub">DEF</div></button>
+    <button class="np-btn" onclick="pinPress('4')">4<div class="np-sub">GHI</div></button>
+    <button class="np-btn" onclick="pinPress('5')">5<div class="np-sub">JKL</div></button>
+    <button class="np-btn" onclick="pinPress('6')">6<div class="np-sub">MNO</div></button>
+    <button class="np-btn" onclick="pinPress('7')">7<div class="np-sub">PQRS</div></button>
+    <button class="np-btn" onclick="pinPress('8')">8<div class="np-sub">TUV</div></button>
+    <button class="np-btn" onclick="pinPress('9')">9<div class="np-sub">WXYZ</div></button>
+    <button class="np-btn empty"></button>
+    <button class="np-btn" onclick="pinPress('0')">0</button>
+    <button class="np-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="lock-error" id="lock-error"></div>
+  <div class="lock-hint"><a onclick="resetConfig()">Modifier l'URL du script</a></div>
+</div>
+
+<!-- SPINNER -->
+
+<div class="spinner-overlay" id="spinner"><div class="spinner"></div></div>
+
+<!-- APP -->
+
+<div id="app" style="display:none">
+  <div class="header">
+    <div>
+      <div class="logo">Tensio<span>Soins</span></div>
+      <div class="logo-sub">Infirmier libéral</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-user" id="hdr-user"></div>
+      <button class="btn-icon" onclick="lockApp()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+      <button class="btn-add" onclick="openAddPatient()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTE -->
+
+  <div class="page active" id="page-list">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" type="text" placeholder="Rechercher un patient…" id="search-input" oninput="renderList()">
+    </div>
+    <div class="patient-list" id="patient-list"></div>
+  </div>
+
+  <!-- DETAIL -->
+
+  <div class="page" id="page-detail">
+    <div class="detail-top">
+      <button class="btn-back" onclick="goBack()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div style="flex:1;min-width:0;">
+        <div class="d-name" id="d-name">—</div>
+        <div class="d-dob" id="d-dob"></div>
+      </div>
+      <button class="btn-edit-patient" onclick="openEditPatient()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Modifier
+      </button>
+    </div>
+
+```
+<div class="form-card">
+  <div class="form-ttl">Nouvelle mesure</div>
+  <div class="grid3">
+    <div class="inp-grp"><div class="inp-lbl">SYS</div><input class="m-inp" type="number" id="i-sys" placeholder="120" inputmode="numeric" min="60" max="280"><div class="inp-unit">mmHg</div></div>
+    <div class="inp-grp"><div class="inp-lbl">DIA</div><input class="m-inp" type="number" id="i-dia" placeholder="80" inputmode="numeric" min="40" max="180"><div class="inp-unit">mmHg</div></div>
+    <div class="inp-grp"><div class="inp-lbl">Pouls</div><input class="m-inp" type="number" id="i-pulse" placeholder="72" inputmode="numeric" min="30" max="220"><div class="inp-unit">bpm</div></div>
+  </div>
+  <div class="sat-row" onclick="toggleSat()">
+    <div class="sat-lbl"><div class="sat-dot"></div>Saturation SpO₂</div>
+    <div class="toggle" id="sat-tog"></div>
+  </div>
+  <div class="sat-sec" id="sat-sec">
+    <div class="grid2">
+      <div class="inp-grp"><div class="inp-lbl" style="color:var(--c-sat)">SpO₂</div><input class="m-inp sat-i" type="number" id="i-sat" placeholder="98" inputmode="numeric" min="50" max="100"><div class="inp-unit" style="color:var(--c-sat)">%</div></div>
+      <div style="display:flex;align-items:center;"><div id="sat-hint" class="sat-hint"></div></div>
+    </div>
+  </div>
+  <textarea class="note-inp" id="i-note" rows="2" placeholder="Note (optionnel)…"></textarea>
+  <button class="btn-save" onclick="saveMeasure()">Enregistrer la mesure</button>
+</div>
+
+<div class="hist-hdr">
+  <div class="sec-ttl">Historique</div>
+  <div class="send-btns">
+    <button class="btn-send sms-last" onclick="sendSMS('last')">💬 Dernière</button>
+    <button class="btn-send email-last" onclick="sendEmail('last')">✉️ Dernière</button>
+    <button class="btn-send sms-all" onclick="sendSMS('all')">💬 Historique</button>
+    <button class="btn-send email-all" onclick="sendEmail('all')">✉️ Historique</button>
+  </div>
+</div>
+<div class="hist-list" id="hist-list"></div>
+```
+
+  </div>
+
+  <!-- PARAMETRES -->
+
+  <div class="page" id="page-settings">
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:20px;">Paramètres</div>
+
+```
+<div class="form-card">
+  <div class="form-ttl">🎨 Thèmes prédéfinis</div>
+  <div class="theme-presets">
+    <button class="preset-btn" onclick="applyTheme('dark-blue')" style="border-color:#4f8ef7;color:#4f8ef7;">Bleu nuit</button>
+    <button class="preset-btn" onclick="applyTheme('dark-green')" style="border-color:#3ecf8e;color:#3ecf8e;">Vert menthe</button>
+    <button class="preset-btn" onclick="applyTheme('dark-purple')" style="border-color:#a78bfa;color:#a78bfa;">Violet</button>
+    <button class="preset-btn" onclick="applyTheme('dark-orange')" style="border-color:#f7934c;color:#f7934c;">Corail</button>
+    <button class="preset-btn" onclick="applyTheme('light')" style="background:#f0f0f5;color:#333;border-color:#ccc;">☀️ Clair</button>
+  </div>
+</div>
+
+<div class="form-card">
+  <div class="form-ttl">🎨 Couleurs personnalisées</div>
+
+  <div class="color-section">
+    <div class="color-section-ttl">Couleur principale</div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-accent" value="#4f8ef7" oninput="applyColor('--c-accent',this.value);applyColor('--accent',this.value);">
+          <div class="color-ring active" id="ring-accent"></div>
+        </div>
+        <div class="color-item-lbl">Accent</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-ok" value="#7dd4b0" oninput="applyColor('--c-ok',this.value);">
+          <div class="color-ring" id="ring-ok"></div>
+        </div>
+        <div class="color-item-lbl">Normal</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-warn" value="#f7c44f" oninput="applyColor('--c-warn',this.value);">
+          <div class="color-ring" id="ring-warn"></div>
+        </div>
+        <div class="color-item-lbl">Élevée</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-danger" value="#f76f6f" oninput="applyColor('--c-danger',this.value);">
+          <div class="color-ring" id="ring-danger"></div>
+        </div>
+        <div class="color-item-lbl">Critique</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-sat" value="#a78bfa" oninput="applyColor('--c-sat',this.value);">
+          <div class="color-ring" id="ring-sat"></div>
+        </div>
+        <div class="color-item-lbl">SpO₂</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="color-section">
+    <div class="color-section-ttl">Fond & surfaces</div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-bg" value="#0f1117" oninput="applyColor('--bg',this.value);">
+          <div class="color-ring"></div>
+        </div>
+        <div class="color-item-lbl">Fond</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-surface" value="#1a1d26" oninput="applyColor('--surface',this.value);">
+          <div class="color-ring"></div>
+        </div>
+        <div class="color-item-lbl">Cartes</div>
+      </div>
+      <div class="color-item">
+        <div class="color-swatch-wrap">
+          <input type="color" class="color-swatch" id="c-text" value="#e8eaf2" oninput="applyColor('--text',this.value);">
+          <div class="color-ring"></div>
+        </div>
+        <div class="color-item-lbl">Texte</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-msave" onclick="saveColors()" style="margin-top:4px;">Sauvegarder les couleurs</button>
+  <button class="btn-mdanger" onclick="resetColors()">Réinitialiser les couleurs</button>
+</div>
+
+<div class="form-card">
+  <div class="form-ttl">⚙️ Connexion</div>
+  <button class="btn-mdanger" onclick="resetConfig()">Modifier l'URL du script</button>
+</div>
+```
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-patients" onclick="navTo('page-list','nav-patients')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Patients
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="navTo('page-settings','nav-settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Paramètres
+    </button>
+  </div>
+</div>
+
+<!-- MODAL PATIENT (ajout) -->
+
+<div class="overlay" id="modal-p">
+  <div class="modal">
+    <div class="modal-ttl">Nouveau patient<button class="modal-x" onclick="closeModal('modal-p')">✕</button></div>
+    <div class="modal-fld"><label class="modal-lbl">Prénom</label><input class="modal-inp" type="text" id="m-fn" placeholder="Jean"></div>
+    <div class="modal-fld"><label class="modal-lbl">Nom</label><input class="modal-inp" type="text" id="m-ln" placeholder="Dupont"></div>
+    <div class="modal-fld"><label class="modal-lbl">Date de naissance</label><input class="modal-inp" type="date" id="m-dob"></div>
+    <div class="modal-fld"><label class="modal-lbl">Téléphone</label><input class="modal-inp" type="tel" id="m-tel" placeholder="06 12 34 56 78"></div>
+    <div class="modal-fld"><label class="modal-lbl">Email</label><input class="modal-inp" type="email" id="m-email" placeholder="patient@email.fr"></div>
+    <button class="btn-msave" onclick="savePatient()">Ajouter le patient</button>
+  </div>
+</div>
+
+<!-- MODAL PATIENT (modification) -->
+
+<div class="overlay" id="modal-edit-p">
+  <div class="modal">
+    <div class="modal-ttl">Modifier le patient<button class="modal-x" onclick="closeModal('modal-edit-p')">✕</button></div>
+    <div class="modal-fld"><label class="modal-lbl">Prénom</label><input class="modal-inp" type="text" id="e-fn" placeholder="Jean"></div>
+    <div class="modal-fld"><label class="modal-lbl">Nom</label><input class="modal-inp" type="text" id="e-ln" placeholder="Dupont"></div>
+    <div class="modal-fld"><label class="modal-lbl">Date de naissance</label><input class="modal-inp" type="date" id="e-dob"></div>
+    <div class="modal-fld"><label class="modal-lbl">Téléphone</label><input class="modal-inp" type="tel" id="e-tel" placeholder="06 12 34 56 78"></div>
+    <div class="modal-fld"><label class="modal-lbl">Email</label><input class="modal-inp" type="email" id="e-email" placeholder="patient@email.fr"></div>
+    <button class="btn-msave" onclick="updatePatient()">Enregistrer les modifications</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const K_URL='ts_script_url', K_COLORS='ts_colors';
+let API_URL='',currentUser=null,patients=[],measures={},curId=null,satOn=false,pinBuf='';
+
+// ═══ CONFIG ═══
+function init(){
+  API_URL=localStorage.getItem(K_URL)||'';
+  loadColors();
+  if(!API_URL) document.getElementById('config-screen').style.display='flex';
+  else showLock();
+}
+async function testURL(){
+  const url=document.getElementById('cfg-url').value.trim();
+  const el=document.getElementById('test-result');
+  if(!url){el.textContent='⚠️ Collez une URL d\'abord';el.style.color='var(--c-warn)';return;}
+  el.textContent='Test en cours…';el.style.color='var(--text3)';
+  try{
+    const res=await fetch(url+'?action=ping',{method:'GET'});
+    const data=await res.json();
+    el.textContent=data.ok||data.msg?'✅ Connexion réussie !':'⚠️ Script répond mais avec erreur';
+    el.style.color=data.ok||data.msg?'var(--c-ok)':'var(--c-warn)';
+  }catch(e){el.textContent='❌ Impossible de contacter le script';el.style.color='var(--c-danger)';}
+}
+function saveConfig(){
+  const url=document.getElementById('cfg-url').value.trim();
+  if(!url.includes('script.google.com')){toast('⚠️ URL invalide');return;}
+  localStorage.setItem(K_URL,url);API_URL=url;showLock();
+}
+function resetConfig(){localStorage.removeItem(K_URL);location.reload();}
+
+// ═══ COULEURS ═══
+const themes={
+  'dark-blue':{bg:'#0f1117',surface:'#1a1d26',surface2:'#22263a',border:'#2e3347',text:'#e8eaf2',accent:'#4f8ef7',ok:'#7dd4b0',warn:'#f7c44f',danger:'#f76f6f',sat:'#a78bfa'},
+  'dark-green':{bg:'#0d1a14',surface:'#132219',surface2:'#1a3024',border:'#2a4a35',text:'#e2f0e8',accent:'#3ecf8e',ok:'#3ecf8e',warn:'#f7c44f',danger:'#f76f6f',sat:'#a78bfa'},
+  'dark-purple':{bg:'#110f1a',surface:'#1c1828',surface2:'#252038',border:'#363050',text:'#ece9f8',accent:'#a78bfa',ok:'#7dd4b0',warn:'#f7c44f',danger:'#f76f6f',sat:'#f4845f'},
+  'dark-orange':{bg:'#1a0f0a',surface:'#281810',surface2:'#3a2218',border:'#4e3020',text:'#f5ede8',accent:'#f7934c',ok:'#7dd4b0',warn:'#f7c44f',danger:'#f76f6f',sat:'#a78bfa'},
+  'light':{bg:'#f4f6fa',surface:'#ffffff',surface2:'#eef0f7',border:'#d8dce8',text:'#1a1d2e',accent:'#3a7bd5',ok:'#1a9e6e',warn:'#d4900a',danger:'#d63c3c',sat:'#7b5ea7'}
+};
+
+function applyTheme(name){
+  const t=themes[name];if(!t)return;
+  const r=document.documentElement.style;
+  r.setProperty('--bg',t.bg);r.setProperty('--surface',t.surface);
+  r.setProperty('--surface2',t.surface2);r.setProperty('--border',t.border);
+  r.setProperty('--text',t.text);r.setProperty('--accent',t.accent);
+  r.setProperty('--c-accent',t.accent);r.setProperty('--c-ok',t.ok);
+  r.setProperty('--c-warn',t.warn);r.setProperty('--c-danger',t.danger);
+  r.setProperty('--c-sat',t.sat);
+  // Sync color pickers
+  const map={accent:'c-accent',ok:'c-ok',warn:'c-warn',danger:'c-danger',sat:'c-sat',bg:'c-bg',surface:'c-surface',text:'c-text'};
+  Object.entries(map).forEach(([k,id])=>{const el=document.getElementById(id);if(el&&t[k])el.value=t[k];});
+  saveColors();toast('✓ Thème appliqué');
+}
+
+function applyColor(prop,val){
+  document.documentElement.style.setProperty(prop,val);
+}
+
+function saveColors(){
+  const cols={};
+  ['--bg','--surface','--surface2','--border','--text','--c-accent','--c-ok','--c-warn','--c-danger','--c-sat'].forEach(p=>{
+    cols[p]=getComputedStyle(document.documentElement).getPropertyValue(p).trim();
+  });
+  localStorage.setItem(K_COLORS,JSON.stringify(cols));
+  toast('✓ Couleurs sauvegardées');
+}
+
+function loadColors(){
+  try{
+    const cols=JSON.parse(localStorage.getItem(K_COLORS)||'{}');
+    Object.entries(cols).forEach(([p,v])=>{
+      document.documentElement.style.setProperty(p,v);
+      // also set --accent from --c-accent
+      if(p==='--c-accent') document.documentElement.style.setProperty('--accent',v);
+    });
+    // Sync color pickers
+    const map={'--c-accent':'c-accent','--c-ok':'c-ok','--c-warn':'c-warn','--c-danger':'c-danger','--c-sat':'c-sat','--bg':'c-bg','--surface':'c-surface','--text':'c-text'};
+    Object.entries(map).forEach(([p,id])=>{
+      const el=document.getElementById(id);if(el&&cols[p])el.value=cols[p];
+    });
+  }catch(e){}
+}
+
+function resetColors(){
+  localStorage.removeItem(K_COLORS);
+  applyTheme('dark-blue');
+  toast('Couleurs réinitialisées');
+}
+
+// ═══ API ═══
+async function api(params){
+  const url=API_URL+'?'+new URLSearchParams(params).toString();
+  const res=await fetch(url,{method:'GET'});
+  return res.json();
+}
+function showSpinner(v){document.getElementById('spinner').classList.toggle('show',v);}
+
+// ═══ LOCK ═══
+function showLock(){
+  document.getElementById('config-screen').style.display='none';
+  document.getElementById('lock-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  pinBuf='';updateDots();
+  document.getElementById('lock-error').textContent='';
+  document.getElementById('lock-login').value='';
+}
+function lockApp(){currentUser=null;showLock();}
+
+function pinPress(d){
+  // Fermer le clavier si ouvert
+  document.activeElement && document.activeElement.blur();
+  if(pinBuf.length>=4)return;
+  pinBuf+=d;updateDots();
+  if(pinBuf.length===4)setTimeout(doLogin,150);
+}
+function pinDel(){pinBuf=pinBuf.slice(0,-1);updateDots();}
+function updateDots(){
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById('d'+i);
+    dot.classList.toggle('filled',i<pinBuf.length);
+    dot.classList.remove('error');
+  }
+}
+function pinError(msg){
+  for(let i=0;i<4;i++)document.getElementById('d'+i).classList.add('error');
+  document.getElementById('lock-error').textContent=msg||'Identifiants incorrects';
+  setTimeout(()=>{pinBuf='';updateDots();document.getElementById('lock-error').textContent='';},1500);
+}
+async function doLogin(){
+  const login=document.getElementById('lock-login').value.trim();
+  if(!login){pinError('Identifiant requis');return;}
+  showSpinner(true);
+  try{
+    const res=await api({action:'login',login,pin:pinBuf});
+    if(res.ok){
+      currentUser=res.user;
+      document.getElementById('hdr-user').textContent=res.user.prenom+' '+res.user.nom;
+      document.getElementById('lock-screen').style.display='none';
+      document.getElementById('app').style.display='block';
+      await loadPatients();renderList();
+    } else pinError(res.error||'Identifiants incorrects');
+  }catch(e){pinError('Erreur réseau — vérifiez votre connexion');}
+  finally{showSpinner(false);}
+}
+
+// ═══ NAV ═══
+function navTo(pageId,navId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(navId).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══ PATIENTS ═══
+async function loadPatients(){
+  showSpinner(true);
+  try{const res=await api({action:'getPatients'});if(res.ok)patients=res.patients||[];}
+  catch(e){toast('⚠️ Erreur chargement');}
+  finally{showSpinner(false);}
+}
+
+function renderList(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const el=document.getElementById('patient-list');
+  const list=patients.filter(p=>(p.firstname+' '+p.lastname).toLowerCase().includes(q))
+    .sort((a,b)=>(a.lastname+a.firstname).localeCompare(b.lastname+b.firstname));
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><p>${patients.length===0?'Aucun patient.\nAppuyez sur + pour commencer.':'Aucun résultat.'}</p></div>`;
+    return;
+  }
+  el.innerHTML=list.map(p=>{
+    const pm=measures[p.id]||[];const last=pm[pm.length-1];
+    let bpH=`<div style="font-size:11px;color:var(--text3)">—</div>`;
+    if(last){const c=bpClr(last.sys,last.dia);const dt=new Date(last.ts);bpH=`<div class="bp-val" style="color:${c}">${last.sys}/${last.dia}</div><div class="bp-lbl">${dt.getDate()}/${dt.getMonth()+1}</div>`;}
+    const age=p.dob&&p.dob!='Invalid Date'&&p.dob!==''?Math.floor((Date.now()-new Date(p.dob))/31557600000)+' ans':'';
+    return `<div class="patient-card" onclick="openPatient('${p.id}')">
+      <div class="avatar">${ini(p)}</div>
+      <div class="p-info"><div class="p-name">${p.firstname} ${(p.lastname||'').toUpperCase()}</div><div class="p-meta">${age}${age&&p.phone?' · ':''}${p.phone||''}</div></div>
+      <div class="p-bp">${bpH}</div>
+    </div>`;
+  }).join('');
+}
+
+function openAddPatient(){
+  ['m-fn','m-ln','m-dob','m-tel','m-email'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-p').classList.add('open');
+  setTimeout(()=>document.getElementById('m-fn').focus(),300);
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+async function savePatient(){
+  const fn=document.getElementById('m-fn').value.trim();
+  const ln=document.getElementById('m-ln').value.trim();
+  if(!fn||!ln){toast('⚠️ Prénom et nom requis');return;}
+  showSpinner(true);
+  try{
+    const res=await api({action:'addPatient',firstname:fn,lastname:ln,dob:document.getElementById('m-dob').value,phone:document.getElementById('m-tel').value.trim(),email:document.getElementById('m-email').value.trim(),created_by:currentUser.id});
+    if(res.ok){await loadPatients();closeModal('modal-p');renderList();toast('✓ Patient ajouté');}
+    else toast('⚠️ '+res.error);
+  }catch(e){toast('⚠️ Erreur réseau');}
+  finally{showSpinner(false);}
+}
+
+// ── Modification patient ──
+function openEditPatient(){
+  const p=patients.find(x=>x.id===curId);if(!p)return;
+  document.getElementById('e-fn').value=p.firstname||'';
+  document.getElementById('e-ln').value=p.lastname||'';
+  document.getElementById('e-dob').value=p.dob||'';
+  document.getElementById('e-tel').value=p.phone||'';
+  document.getElementById('e-email').value=p.email||'';
+  document.getElementById('modal-edit-p').classList.add('open');
+}
+
+async function updatePatient(){
+  const fn=document.getElementById('e-fn').value.trim();
+  const ln=document.getElementById('e-ln').value.trim();
+  if(!fn||!ln){toast('⚠️ Prénom et nom requis');return;}
+  showSpinner(true);
+  try{
+    const res=await api({
+      action:'updatePatient',
+      patient_id:curId,
+      firstname:fn,lastname:ln,
+      dob:document.getElementById('e-dob').value,
+      phone:document.getElementById('e-tel').value.trim(),
+      email:document.getElementById('e-email').value.trim()
+    });
+    if(res.ok){
+      await loadPatients();
+      closeModal('modal-edit-p');
+      // Mettre à jour l'affichage
+      const p=patients.find(x=>x.id===curId);
+      if(p){
+        document.getElementById('d-name').textContent=p.firstname+' '+(p.lastname||'').toUpperCase();
+      }
+      renderList();
+      toast('✓ Patient modifié');
+    } else toast('⚠️ '+res.error);
+  }catch(e){toast('⚠️ Erreur réseau');}
+  finally{showSpinner(false);}
+}
+
+// ═══ DETAIL ═══
+async function openPatient(id){
+  curId=id;
+  const p=patients.find(x=>x.id===id);if(!p)return;
+  document.getElementById('d-name').textContent=p.firstname+' '+(p.lastname||'').toUpperCase();
+  const dob=p.dob&&p.dob!==''?new Date(p.dob):null;
+  const age=dob?' · '+Math.floor((Date.now()-dob)/31557600000)+' ans':'';
+  document.getElementById('d-dob').textContent=(dob?dob.toLocaleDateString('fr-FR'):'')+age;
+  ['i-sys','i-dia','i-pulse','i-sat','i-note'].forEach(id=>document.getElementById(id).value='');
+  satOn=false;
+  document.getElementById('sat-tog').classList.remove('on');
+  document.getElementById('sat-sec').classList.remove('show');
+  document.getElementById('sat-hint').textContent='';
+  // Nav
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  window.scrollTo(0,0);
+  await loadMeasures(id);renderHistory();
+}
+function goBack(){
+  navTo('page-list','nav-patients');
+  curId=null;
+}
+
+async function loadMeasures(pid){
+  showSpinner(true);
+  try{const res=await api({action:'getMeasures',patient_id:pid});if(res.ok)measures[pid]=res.measures||[];}
+  catch(e){toast('⚠️ Erreur mesures');}
+  finally{showSpinner(false);}
+}
+
+// ═══ SAT ═══
+function toggleSat(){
+  satOn=!satOn;
+  document.getElementById('sat-tog').classList.toggle('on',satOn);
+  document.getElementById('sat-sec').classList.toggle('show',satOn);
+  if(satOn)setTimeout(()=>document.getElementById('i-sat').focus(),100);
+}
+document.getElementById('i-sat').addEventListener('input',function(){
+  const v=parseInt(this.value);const h=document.getElementById('sat-hint');
+  if(!isNaN(v)&&v>=50&&v<=100){const s=satSt(v);h.textContent=s.l;h.style.color=s.c;}
+  else h.textContent='';
+});
+
+// ═══ MESURES ═══
+async function saveMeasure(){
+  const sys=parseInt(document.getElementById('i-sys').value);
+  const dia=parseInt(document.getElementById('i-dia').value);
+  const pulse=parseInt(document.getElementById('i-pulse').value);
+  const note=document.getElementById('i-note').value.trim();
+  if(!sys||!dia){toast('⚠️ SYS et DIA requis');return;}
+  const params={action:'addMeasure',patient_id:curId,ts:Date.now(),sys,dia,created_by:currentUser.id};
+  if(pulse)params.pulse=pulse;
+  if(satOn){const s=parseInt(document.getElementById('i-sat').value);if(s>=50&&s<=100)params.sat=s;}
+  if(note)params.note=note;
+  showSpinner(true);
+  try{
+    const res=await api(params);
+    if(res.ok){
+      await loadMeasures(curId);
+      ['i-sys','i-dia','i-pulse','i-sat','i-note'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('sat-hint').textContent='';
+      renderHistory();renderList();toast('✓ Mesure enregistrée');
+    } else toast('⚠️ '+res.error);
+  }catch(e){toast('⚠️ Erreur réseau');}
+  finally{showSpinner(false);}
+}
+
+async function deleteMeasure(mid){
+  showSpinner(true);
+  try{
+    const res=await api({action:'deleteMeasure',measure_id:mid});
+    if(res.ok){await loadMeasures(curId);renderHistory();renderList();toast('Mesure supprimée');}
+    else toast('⚠️ '+res.error);
+  }catch(e){toast('⚠️ Erreur réseau');}
+  finally{showSpinner(false);}
+}
+
+function renderHistory(){
+  const list=(measures[curId]||[]).slice().reverse();
+  const el=document.getElementById('hist-list');
+  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:28px 0;color:var(--text3);font-size:13px;">Aucune mesure enregistrée</div>`;return;}
+  el.innerHTML=list.map(m=>{
+    const fd=fmtDate(m.ts);const c=bpClr(m.sys,m.dia);
+    const dc=bpSt(m.sys,m.dia)==='ok'?'var(--c-ok)':bpSt(m.sys,m.dia)==='warn'?'var(--c-warn)':'var(--c-danger)';
+    const pulseH=m.pulse?`<div class="m-pulse">♥ ${m.pulse} bpm</div>`:'';
+    let satH='';if(m.sat!=null){const ss=satSt(m.sat);satH=`<div class="m-sat-v" style="color:${ss.c}">◉ ${m.sat}%</div>`;}
+    return `<div class="meas-item">
+      <div class="date-col"><div class="m-day">${fd.day}</div><div class="m-mon">${fd.mon}</div><div class="m-time">${fd.time}</div></div>
+      <div class="div-line"></div>
+      <div class="meas-vals">
+        <div class="bp-row"><span class="m-sys" style="color:${c}">${m.sys}</span><span class="m-sep">/</span><span class="m-dia">${m.dia}</span><span class="m-unit">mmHg</span></div>
+        <div class="sub-row">${pulseH}${satH}</div>
+        ${m.note?`<div class="m-note">${m.note}</div>`:''}
+        ${m.created_by?`<div class="m-by">par ${m.created_by}</div>`:''}
+      </div>
+      <div class="status-dot" style="background:${dc}"></div>
+      <button class="del-btn" onclick="deleteMeasure('${m.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ═══ ENVOI ═══
+function fmtMsg(m){
+  const d=new Date(m.ts);
+  const ds=d.toLocaleDateString('fr-FR')+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  let l=`${ds}\nTA : ${m.sys}/${m.dia} mmHg`;
+  if(m.pulse)l+=` | Pouls : ${m.pulse} bpm`;
+  if(m.sat!=null)l+=` | SpO₂ : ${m.sat}%`;
+  if(m.note)l+=`\nNote : ${m.note}`;
+  return l;
+}
+function buildMsg(scope){
+  const p=patients.find(x=>x.id===curId);
+  const list=measures[curId]||[];if(!list.length)return null;
+  if(scope==='last'){const last=list[list.length-1];return{subject:`Mesure du ${new Date(last.ts).toLocaleDateString('fr-FR')}`,body:`Bonjour ${p.firstname},\n\nVotre dernière mesure :\n${fmtMsg(last)}\n\nVotre infirmier(ère)`};}
+  const items=list.slice(-10);
+  return{subject:`Historique tensions – ${p.firstname} ${p.lastname}`,body:`Bonjour ${p.firstname},\n\nHistorique (${items.length} mesures) :\n\n${items.map(m=>fmtMsg(m)).join('\n──────\n')}\n\nVotre infirmier(ère)`};
+}
+function sendSMS(scope){
+  const p=patients.find(x=>x.id===curId);const msg=buildMsg(scope);
+  if(!msg){toast('⚠️ Aucune mesure');return;}
+  const tel=(p.phone||'').replace(/[\s\-\.]/g,'');
+  window.open(tel?`sms://${tel}?body=${encodeURIComponent(msg.body)}`:`sms://?body=${encodeURIComponent(msg.body)}`,'_self');
+}
+function sendEmail(scope){
+  const p=patients.find(x=>x.id===curId);const msg=buildMsg(scope);
+  if(!msg){toast('⚠️ Aucune mesure');return;}
+  window.open(`mailto:${p.email||''}?subject=${encodeURIComponent(msg.subject)}&body=${encodeURIComponent(msg.body)}`,'_self');
+}
+
+// ═══ HELPERS ═══
+function bpSt(s,d){if(s>=180||d>=110)return'danger';if(s>=140||d>=90)return'warn';return'ok';}
+function bpClr(s,d){const t=bpSt(s,d);return t==='ok'?'var(--c-ok)':t==='warn'?'var(--c-warn)':'var(--c-danger)';}
+function satSt(v){if(v>=96)return{l:'Normal ✓',c:'var(--c-sat)'};if(v>=90)return{l:'Bas ⚠️',c:'var(--c-warn)'};return{l:'Critique 🔴',c:'var(--c-danger)'};}
+function ini(p){return((p.firstname||'?')[0]+(p.lastname||'?')[0]).toUpperCase();}
+function fmtDate(ts){const d=new Date(ts);const mo=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return{day:d.getDate(),mon:mo[d.getMonth()],time:d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};}
+function toast(msg,dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+
+init();
+</script>
+
+</body>
+</html>
