@@ -45,10 +45,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .lock-inp{width:100%;background:var(–surface);border:1.5px solid var(–border);border-radius:var(–radius-sm);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:16px;padding:12px 14px;outline:none;text-align:center;transition:border-color .2s;}
 .lock-inp:focus{border-color:var(–c-accent);}
 .lock-pin-lbl{font-size:11px;color:var(–text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:14px;}
-.pin-dots{display:flex;gap:16px;margin-bottom:24px;}
-.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(–text3);transition:all .15s;}
-.pin-dot.filled{background:var(–c-accent);border-color:var(–c-accent);}
-.pin-dot.error{background:var(–c-danger);border-color:var(–c-danger);}
+.pin-dots{display:flex;gap:12px;margin-bottom:24px;}
+.pin-dot{width:52px;height:64px;border-radius:var(–radius-sm);border:2px solid var(–border);background:var(–surface2);display:flex;align-items:center;justify-content:center;font-family:‘DM Serif Display’,serif;font-size:32px;color:transparent;transition:all .15s;letter-spacing:0;}
+.pin-dot.filled{border-color:var(–c-accent);color:var(–c-accent);background:rgba(79,142,247,.08);}
+.pin-dot.filled.show-digit{color:var(–c-accent);}
+.pin-dot.error{border-color:var(–c-danger);color:var(–c-danger);background:rgba(247,111,111,.08);}
 .numpad{display:grid;grid-template-columns:repeat(3,68px);gap:10px;}
 .np-btn{width:68px;height:68px;border-radius:50%;background:var(–surface);border:1px solid var(–border);color:var(–text);font-family:‘DM Sans’,sans-serif;font-size:22px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;transition:background .1s,transform .1s;}
 .np-btn:active{background:var(–surface2);transform:scale(.93);}
@@ -934,14 +935,32 @@ function pinDel(){pinBuf=pinBuf.slice(0,-1);updateDots();}
 function updateDots(){
   for(let i=0;i<4;i++){
     const dot=document.getElementById('d'+i);
-    dot.classList.toggle('filled',i<pinBuf.length);
+    const filled=i<pinBuf.length;
+    dot.classList.toggle('filled',filled);
     dot.classList.remove('error');
+    dot.textContent=filled?pinBuf[i]:'';
+  }
+  // Masquer temporairement le dernier chiffre après 800ms (optionnel sécurité)
+  clearTimeout(window._pinMaskTimer);
+  if(pinBuf.length>0&&pinBuf.length<4){
+    window._pinMaskTimer=setTimeout(()=>{
+      const dot=document.getElementById('d'+(pinBuf.length-1));
+      if(dot&&dot.classList.contains('filled'))dot.textContent='•';
+    },800);
   }
 }
 function pinError(msg){
-  for(let i=0;i<4;i++)document.getElementById('d'+i).classList.add('error');
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById('d'+i);
+    dot.classList.add('error');
+    dot.textContent='✕';
+  }
   document.getElementById('lock-error').textContent=msg||'Identifiants incorrects';
-  setTimeout(()=>{pinBuf='';updateDots();document.getElementById('lock-error').textContent='';},1500);
+  setTimeout(()=>{
+    pinBuf='';
+    updateDots();
+    document.getElementById('lock-error').textContent='';
+  },1500);
 }
 async function doLogin(){
   const login=document.getElementById('lock-login').value.trim();
